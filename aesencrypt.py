@@ -42,7 +42,7 @@ class Encrypt:
 
     def shift_rows(self, s):
         for i in range(1, 4):
-            row = [s[j][i] for j in range(4)]  # Extract the row
+            row = [s[j][i] for j in range(4)]  
             row = row[i:] + row[:i]            # Rotate left by i positions
             for j in range(4):
                 s[j][i] = row[j]               # Put the rotated row back
@@ -53,18 +53,21 @@ class Encrypt:
                 s[i][j] ^= k[i][j]
 
     # learned from https://web.archive.org/web/20100626212235/http://cs.ucsb.edu/~koc/cs178/projects/JT/aes.c
-    def xtime(self, a):
-        return (((a << 1) ^ 0x1B) & 0xFF) if (a & 0x80) else (a << 1)
+    def gf_multiply_by_2(self, byte):
+        return (((byte << 1) ^ 0x1B) & 0xFF) if (byte & 0x80) else (byte << 1)
 
-    def mix_single_column(self, a):
-        # see Sec 4.1.2 in The Design of Rijndael
-        t = a[0] ^ a[1] ^ a[2] ^ a[3]
-        u = a[0]
-        a[0] ^= t ^ self.xtime(a[0] ^ a[1])
-        a[1] ^= t ^ self.xtime(a[1] ^ a[2])
-        a[2] ^= t ^ self.xtime(a[2] ^ a[3])
-        a[3] ^= t ^ self.xtime(a[3] ^ u)
-
+    def mix_single_column(self, column):
+        # Compute the XOR of all elements in the column
+        xor_sum = column[0] ^ column[1] ^ column[2] ^ column[3]
+        
+        # Store the original first element for later use
+        first_element = column[0]
+        
+        # Update each element in the column
+        column[0] ^= xor_sum ^ self.gf_multiply_by_2(column[0] ^ column[1])
+        column[1] ^= xor_sum ^ self.gf_multiply_by_2(column[1] ^ column[2])
+        column[2] ^= xor_sum ^ self.gf_multiply_by_2(column[2] ^ column[3])
+        column[3] ^= xor_sum ^ self.gf_multiply_by_2(column[3] ^ first_element)
     def mix_columns(self, s):
         for i in range(4):
             self.mix_single_column(s[i])
