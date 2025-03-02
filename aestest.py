@@ -9,32 +9,26 @@ from aesencrypt import Encrypt
 from aesdecrypt import Decrypt
 
 def read_multiline_input():
-    
     print("Enter your plaintext. Press Enter and Ctrl+D to finish:")
-
     input_lines = []
     
     try:
         if os.name == 'nt':  # Windows handling
             while True:
                 line = ""
-                while True:
-                    char = msvcrt.getwch()  # Read one character at a time
-                    if char == '\x04':  # Ctrl+D (EOF in ASCII)
-                        raise EOFError
-                    elif char in ('\r', '\n'):  # Enter key
-                        print()  # Move to the next line
-                        break
-                    print(char, end='', flush=True)  # Show typed characters
+                while (char := msvcrt.getwch()) not in ('\x04', '\r', '\n'):
+                    print(char, end='', flush=True)
                     line += char
+                if char == '\x04':  # Ctrl+D
+                    raise EOFError
+                print()
                 if line:
                     input_lines.append(line)
-        else:  # Linux/macOS handling
+        else:  # Linux/macOS
             while True:
-                line = input()
-                input_lines.append(line)
-    except EOFError:  # Handles Ctrl+D in all OSes
-        print("\nInput finished.")
+                input_lines.append(input())
+    except EOFError:
+        print("\n----Input finished----")
 
     return "\n".join(input_lines).strip()
 
@@ -49,10 +43,12 @@ def main():
     ciphertext = Encrypt(key, plaintext).encrypt()
 
     print("\nKey:", key)
-    print("Ciphertext:", ciphertext.hex())
+    print("\nCiphertext:", ciphertext.hex())
 
     original_plaintext = Decrypt(key, ciphertext).decrypt()
-    print("Original plaintext:", original_plaintext.decode(errors="ignore"))
+    
+    print("\nOriginal plaintext:")
+    print(original_plaintext.decode(), "\n")
 
 if __name__ == "__main__":
     main()
