@@ -47,12 +47,11 @@ class Encrypt:
             for j in range(4):
                 s[j][i] = row[j]               # Put the rotated row back
 
-    def add_round_key(self, s, k):
+    def add_round_key(self, state, k):
         for i in range(4):
             for j in range(4):
-                s[i][j] ^= k[i][j]
+                state[i][j] ^= k[i][j]
 
-    # learned from https://web.archive.org/web/20100626212235/http://cs.ucsb.edu/~koc/cs178/projects/JT/aes.c
     def gf_multiply_by_2(self, byte):
         return (((byte << 1) ^ 0x1B) & 0xFF) if (byte & 0x80) else (byte << 1)
 
@@ -68,6 +67,7 @@ class Encrypt:
         column[1] ^= xor_sum ^ self.gf_multiply_by_2(column[1] ^ column[2])
         column[2] ^= xor_sum ^ self.gf_multiply_by_2(column[2] ^ column[3])
         column[3] ^= xor_sum ^ self.gf_multiply_by_2(column[3] ^ first_element)
+    
     def mix_columns(self, s):
         for i in range(4):
             self.mix_single_column(s[i])
