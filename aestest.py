@@ -9,8 +9,8 @@ from aesencrypt import Encrypt
 from aesdecrypt import Decrypt
 
 def read_multiline_input():
-    """ Reads multiline input and exits on Ctrl+D for all OSes (Windows, Linux, macOS) """
-    print("Enter your plaintext. Press ENTER for a new line. Press Ctrl+D to finish:")
+    
+    print("Enter your plaintext. Press Enter and Ctrl+D to finish:")
 
     input_lines = []
     
