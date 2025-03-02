@@ -80,15 +80,9 @@ class Encrypt:
         """ Returns a new byte array with the elements xor'ed. """
         return bytes(i^j for i, j in zip(a, b))
 
-    def pad(self, plaintext):
-        """
-        Pads the given plaintext with PKCS#7 padding to a multiple of 16 bytes.
-        Note that if the plaintext size is a multiple of 16,
-        a whole block will be added.
-        """
-        padding_len = 16 - (len(plaintext) % 16)
-        padding = bytes([padding_len] * padding_len)
-        return plaintext + padding
+    def pad(self, data):
+        padding_len = 16 - (len(data) % 16) or 16
+        return data + bytes([padding_len] * padding_len)
 
     def split_blocks(self, message, block_size=16, require_padding=True):
             assert len(message) % block_size == 0 or not require_padding
