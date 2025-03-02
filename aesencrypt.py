@@ -37,10 +37,8 @@ class Encrypt:
         
         self.encrypt()
 
-    def sub_bytes(self, s):
-        for i in range(4):
-            for j in range(4):
-                s[i][j] = self.s_box[s[i][j]]
+    def sub_bytes(self, state):
+        state[:] = [[self.s_box[byte] for byte in row] for row in state]
 
     def shift_rows(self, s):
         s[0][1], s[1][1], s[2][1], s[3][1] = s[1][1], s[2][1], s[3][1], s[0][1]
@@ -122,21 +120,22 @@ class Encrypt:
         if len(plaintext) != 16:
             raise ValueError("Data must be exactly 16 bytes.")
 
-        plain_state = self.bytes_to_matrix(plaintext)
-
-        self.add_round_key(plain_state, self.round_keys[0])
+        state = self.bytes_to_matrix(plaintext)
+        
+        #initial iteration of round keys
+        self.add_round_key(state, self.round_keys[0])
 
         for i in range(1, 10):
-            self.sub_bytes(plain_state)
-            self.shift_rows(plain_state)
-            self.mix_columns(plain_state)
-            self.add_round_key(plain_state, self.round_keys[i])
+            self.sub_bytes(state)
+            self.shift_rows(state)
+            self.mix_columns(state)
+            self.add_round_key(state, self.round_keys[i])
 
-        self.sub_bytes(plain_state)
-        self.shift_rows(plain_state)
-        self.add_round_key(plain_state, self.round_keys[-1])
+        self.sub_bytes(state)
+        self.shift_rows(state)
+        self.add_round_key(state, self.round_keys[-1])
 
-        return self.matrix2bytes(plain_state)
+        return self.matrix2bytes(state)
 
 
     def encrypt(self):
