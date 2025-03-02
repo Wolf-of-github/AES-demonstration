@@ -70,9 +70,9 @@ class Decrypt:
 
 
     def inv_shift_rows(self, s):
-        s[0][1], s[1][1], s[2][1], s[3][1] = s[3][1], s[0][1], s[1][1], s[2][1]
-        s[0][2], s[1][2], s[2][2], s[3][2] = s[2][2], s[3][2], s[0][2], s[1][2]
-        s[0][3], s[1][3], s[2][3], s[3][3] = s[1][3], s[2][3], s[3][3], s[0][3]
+        # Inverse ShiftRows operation
+        for i in range(1, 4):
+            s[0][i], s[1][i], s[2][i], s[3][i] = s[(0 - i) % 4][i], s[(1 - i) % 4][i], s[(2 - i) % 4][i], s[(3 - i) % 4][i]
 
     
     def add_round_key(self,s,k):
