@@ -110,9 +110,9 @@ class Decrypt:
 
         self.mix_columns(s)
 
-    def bytes2matrix(self,text):
-        """ Converts a 16-byte array into a 4x4 matrix.  """
-        return [list(text[i:i+4]) for i in range(0, len(text), 4)]
+    def bytes_to_matrix(self, data):
+        """Converts a byte sequence into a 4x4 matrix."""
+        return [list(data[i:i+4]) for i in range(0, len(data), 4)]
 
     def matrix2bytes(self,matrix):
         """ Converts a 4x4 matrix into a 16-byte array.  """
@@ -142,7 +142,7 @@ class Decrypt:
 
     def aes_key_expansion(self, key):
         # Convert the key into a list of 4-byte columns (words)
-        key_schedule = self.bytes2matrix(key)
+        key_schedule = self.bytes_to_matrix(key)
         key_size = len(key) // 4  
 
         round_constant = 1  
@@ -171,7 +171,7 @@ class Decrypt:
         if len(encrypted_data) != 16:
             raise ValueError("Encrypted data must be exactly 16 bytes.")
 
-        state = self.bytes2matrix(encrypted_data)
+        state = self.bytes_to_matrix(encrypted_data)
 
         # Initial round key addition
         self.add_round_key(state, self.round_keys[-1])
