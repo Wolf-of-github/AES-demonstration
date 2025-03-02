@@ -13,20 +13,24 @@ def read_multiline_input():
     print("Enter your plaintext. Press ENTER for a new line. Press Ctrl+D to finish:")
 
     input_lines = []
+    
     try:
-        while True:
-            if os.name == 'nt':  # Windows
+        if os.name == 'nt':  # Windows handling
+            while True:
                 line = ""
                 while True:
                     char = msvcrt.getwch()  # Read one character at a time
                     if char == '\x04':  # Ctrl+D (EOF in ASCII)
                         raise EOFError
                     elif char in ('\r', '\n'):  # Enter key
+                        print()  # Move to the next line
                         break
+                    print(char, end='', flush=True)  # Show typed characters
                     line += char
                 if line:
                     input_lines.append(line)
-            else:  # Linux/macOS
+        else:  # Linux/macOS handling
+            while True:
                 line = input()
                 input_lines.append(line)
     except EOFError:  # Handles Ctrl+D in all OSes
