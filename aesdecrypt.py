@@ -133,9 +133,12 @@ class Decrypt:
         assert all(p == padding_len for p in padding)
         return message
 
-    def split_blocks(self, message, block_size=16, require_padding=True):
-            assert len(message) % block_size == 0 or not require_padding
-            return [message[i:i+16] for i in range(0, len(message), block_size)]
+    def split_into_chunks(self, data):
+        block_size = 16
+        if len(data) % block_size != 0:
+            raise Exception("Data length must be a multiple of 16.")
+        
+        return [data[i:i + block_size] for i in range(0, len(data), block_size)]
 
 
     def aes_key_expansion(self, key):
@@ -187,8 +190,9 @@ class Decrypt:
     def decrypt(self):
         
         blocks = []
-        for ciphertext_block in self.split_blocks(self.ciphertext):
-            block = self.decrypt_block(ciphertext_block)
+        chunks = self.split_into_chunks(self.ciphertext)
+        for cipher_block in chunks:
+            block = self.decrypt_block(cipher_block)
             blocks.append(block)
 
         unpadded_block = self.unpad(b''.join(blocks))
