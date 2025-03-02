@@ -75,10 +75,10 @@ class Decrypt:
         s[0][3], s[1][3], s[2][3], s[3][3] = s[1][3], s[2][3], s[3][3], s[0][3]
 
     
-    def add_round_key(self,state,k):
+    def add_round_key(self,s,k):
         for i in range(4):
             for j in range(4):
-                state[i][j] ^= k[i][j]
+                s[i][j] ^= k[i][j]
 
     def xtime(self, a):
         return (((a << 1) ^ 0x1B) & 0xFF) if (a & 0x80) else (a << 1)
