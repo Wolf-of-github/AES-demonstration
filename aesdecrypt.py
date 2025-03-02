@@ -114,23 +114,20 @@ class Decrypt:
         return [list(data[i:i+4]) for i in range(0, len(data), 4)]
 
     def matrix_to_bytes(self, matrix):
-        """Converts a 4x4 matrix into a 16-byte array."""
         return bytes([byte for row in matrix for byte in row])
 
-    def xor_bytes(self,a, b):
-        """ Returns a new byte array with the elements xor'ed. """
-        return bytes(i^j for i, j in zip(a, b))
+    def xor_bytes(self,b1, b2):
+        return bytes(i^j for i, j in zip(b1, b2))
 
-    def unpad(self, plaintext):
-        """
-        Removes a PKCS#7 padding, returning the unpadded text and ensuring the
-        padding was correct.
-        """
+    def remove_padding(self, plaintext):
+        
         padding_len = plaintext[-1]
-        assert padding_len > 0
-        message, padding = plaintext[:-padding_len], plaintext[-padding_len:]
-        assert all(p == padding_len for p in padding)
-        return message
+        if padding_len <= 0 or padding_len > len(plaintext):
+            raise ValueError("Invalid padding length.")
+        data, padding = plaintext[:-padding_len], plaintext[-padding_len:]
+        if any(p != padding_len for p in padding):
+            raise ValueError("Invalid padding.")
+        return data
 
     def split_into_chunks(self, data):
         block_size = 16
@@ -198,5 +195,5 @@ class Decrypt:
             block = self.decrypt_block(cipher_block)
             blocks.append(block)
 
-        unpadded_block = self.unpad(b''.join(blocks))
-        return unpadded_block
+        remove_paddingded_block = self.remove_padding(b''.join(blocks))
+        return remove_paddingded_block
