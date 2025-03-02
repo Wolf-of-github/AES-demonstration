@@ -1,18 +1,41 @@
 import os
 import sys
+
+# Windows-specific imports
+if os.name == 'nt':
+    import msvcrt
+
 from aesencrypt import Encrypt
 from aesdecrypt import Decrypt
 
-def main():
-    print("Enter Plaintext. Press Enter for a new line. To finish press Ctrl+D two times (Linux/macOS) or Ctrl+Z + ENTER (Windows):")
+def read_multiline_input():
+    """ Reads multiline input and exits on Ctrl+D for all OSes (Windows, Linux, macOS) """
+    print("Enter your plaintext. Press ENTER for a new line. Press Ctrl+D to finish:")
 
+    input_lines = []
     try:
-        lines = sys.stdin.read()  # Reads everything until EOF (Ctrl+D / Ctrl+Z)
-    except KeyboardInterrupt:
-        print("\nInput interrupted. Exiting.")
-        return
+        while True:
+            if os.name == 'nt':  # Windows
+                line = ""
+                while True:
+                    char = msvcrt.getwch()  # Read one character at a time
+                    if char == '\x04':  # Ctrl+D (EOF in ASCII)
+                        raise EOFError
+                    elif char in ('\r', '\n'):  # Enter key
+                        break
+                    line += char
+                if line:
+                    input_lines.append(line)
+            else:  # Linux/macOS
+                line = input()
+                input_lines.append(line)
+    except EOFError:  # Handles Ctrl+D in all OSes
+        print("\nInput finished.")
 
-    plaintext = lines.strip()  # Remove any extra newlines
+    return "\n".join(input_lines).strip()
+
+def main():
+    plaintext = read_multiline_input()
 
     if not plaintext:
         print("No input provided. Exiting.")
