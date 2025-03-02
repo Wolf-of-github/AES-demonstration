@@ -41,9 +41,11 @@ class Encrypt:
         state[:] = [[self.s_box[byte] for byte in row] for row in state]
 
     def shift_rows(self, s):
-        s[0][1], s[1][1], s[2][1], s[3][1] = s[1][1], s[2][1], s[3][1], s[0][1]
-        s[0][2], s[1][2], s[2][2], s[3][2] = s[2][2], s[3][2], s[0][2], s[1][2]
-        s[0][3], s[1][3], s[2][3], s[3][3] = s[3][3], s[0][3], s[1][3], s[2][3]
+        for i in range(1, 4):
+            row = [s[j][i] for j in range(4)]  # Extract the row
+            row = row[i:] + row[:i]            # Rotate left by i positions
+            for j in range(4):
+                s[j][i] = row[j]               # Put the rotated row back
 
     def add_round_key(self, s, k):
         for i in range(4):
