@@ -140,7 +140,6 @@ class Decrypt:
         
         return [data[i:i + block_size] for i in range(0, len(data), block_size)]
 
-
     def aes_key_expansion(self, key):
         # Convert the key into a list of 4-byte columns (words)
         key_schedule = self.bytes2matrix(key)
