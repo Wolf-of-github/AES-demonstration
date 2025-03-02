@@ -84,9 +84,12 @@ class Encrypt:
         padding_len = 16 - (len(data) % 16) or 16
         return data + bytes([padding_len] * padding_len)
 
-    def split_blocks(self, message, block_size=16, require_padding=True):
-            assert len(message) % block_size == 0 or not require_padding
-            return [message[i:i+16] for i in range(0, len(message), block_size)]
+    def split_into_chunks(self, data):
+        block_size = 16
+        if len(data) % block_size != 0:
+            raise Exception("Data length must be a multiple of 16.")
+        
+        return [data[i:i + block_size] for i in range(0, len(data), block_size)]
 
     def aes_key_expansion(self, key):
         # Convert the key into a list of 4-byte columns (words)
@@ -115,8 +118,9 @@ class Encrypt:
         return [key_schedule[i * 4: (i + 1) * 4] for i in range(len(key_schedule) // 4)]
     
     def encrypt_block(self, plaintext):
-        
-        assert len(plaintext) == 16
+
+        if len(plaintext) != 16:
+            raise ValueError("Data must be exactly 16 bytes.")
 
         plain_state = self.bytes_to_matrix(plaintext)
 
@@ -139,7 +143,7 @@ class Encrypt:
         
         plaintext = self.pad(self.plaintext)
         blocks = []
-        chunks = self.split_blocks(plaintext)
+        chunks = self.split_into_chunks(plaintext)
 
         for pb in chunks:
 
