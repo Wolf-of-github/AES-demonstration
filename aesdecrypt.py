@@ -167,25 +167,30 @@ class Decrypt:
         # Convert the expanded key schedule into groups of 4 words (4x4 matrices)
         return [key_schedule[i * 4: (i + 1) * 4] for i in range(len(key_schedule) // 4)]
 
-    def decrypt_block(self, ciphertext):
+    def decrypt_block(self, encrypted_data):
         
-        assert len(ciphertext) == 16
+        if len(encrypted_data) != 16:
+            raise ValueError("Encrypted data must be exactly 16 bytes.")
 
-        cipher_state = self.bytes2matrix(ciphertext)
+        state = self.bytes2matrix(encrypted_data)
 
-        self.add_round_key(cipher_state, self.round_keys[-1])
-        self.inv_shift_rows(cipher_state)
-        self.inv_sub_bytes(cipher_state)
+        # Initial round key addition
+        self.add_round_key(state, self.round_keys[-1])
+        self.inv_shift_rows(state)
+        self.inv_sub_bytes(state)
 
-        for i in range(10 - 1, 0, -1):
-            self.add_round_key(cipher_state, self.round_keys[i])
-            self.inv_mix_columns(cipher_state)
-            self.inv_shift_rows(cipher_state)
-            self.inv_sub_bytes(cipher_state)
+        # Main decryption rounds
+        for round_index in range(9, 0, -1):
+            self.add_round_key(state, self.round_keys[round_index])
+            self.inv_mix_columns(state)
+            self.inv_shift_rows(state)
+            self.inv_sub_bytes(state)
 
-        self.add_round_key(cipher_state, self.round_keys[0])
-
-        return self.matrix2bytes(cipher_state)
+        # Final round key addition
+        self.add_round_key(state, self.round_keys[0])
+        
+        #returns decrypted block as 1D arr of bytes
+        return self.matrix2bytes(state)
 
     def decrypt(self):
         
