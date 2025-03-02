@@ -113,9 +113,9 @@ class Decrypt:
         """Converts a byte sequence into a 4x4 matrix."""
         return [list(data[i:i+4]) for i in range(0, len(data), 4)]
 
-    def matrix2bytes(self,matrix):
-        """ Converts a 4x4 matrix into a 16-byte array.  """
-        return bytes(sum(matrix, []))
+    def matrix_to_bytes(self, matrix):
+        """Converts a 4x4 matrix into a 16-byte array."""
+        return bytes([byte for row in matrix for byte in row])
 
     def xor_bytes(self,a, b):
         """ Returns a new byte array with the elements xor'ed. """
@@ -188,7 +188,7 @@ class Decrypt:
         self.add_round_key(state, self.round_keys[0])
         
         #returns decrypted block as 1D arr of bytes
-        return self.matrix2bytes(state)
+        return self.matrix_to_bytes(state)
 
     def decrypt(self):
         
