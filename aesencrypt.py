@@ -35,7 +35,7 @@ class Encrypt:
 
         self.round_keys = self.aes_key_expansion(self.key)
         
-        self.encrypt_ecb()
+        self.encrypt()
 
     def sub_bytes(self, s):
         for i in range(4):
@@ -141,15 +141,15 @@ class Encrypt:
         return self.matrix2bytes(plain_state)
 
 
-    def encrypt_ecb(self):
+    def encrypt(self):
         
         plaintext = self.pad(self.plaintext)
-
         blocks = []
+        chunks = self.split_blocks(plaintext)
 
-        for plaintext_block in self.split_blocks(plaintext):
+        for pb in chunks:
 
-            block = self.encrypt_block(plaintext_block)
+            block = self.encrypt_block(pb)
             blocks.append(block)
 
         return b''.join(blocks)

@@ -11,7 +11,7 @@ def main():
     key = os.urandom(16).hex()
     plaintext = args.plaintext
     
-    ciphertext = Encrypt(key, plaintext).encrypt_ecb()
+    ciphertext = Encrypt(key, plaintext).encrypt()
     
     print("Key :", key)
     print("Ciphertext :",ciphertext.hex())
