@@ -73,17 +73,17 @@ class Decrypt:
     def add_round_key(self, s, k):
         s[:] = [[s[i][j] ^ k[i][j] for j in range(4)] for i in range(4)]
 
-    def xtime(self, a):
-        return (((a << 1) ^ 0x1B) & 0xFF) if (a & 0x80) else (a << 1)
+    def gf_multiply_by_2(self, byte):
+        return (((byte << 1) ^ 0x1B) & 0xFF) if (byte & 0x80) else (byte << 1)
 
     def mix_single_column(self, a):
         # see Sec 4.1.2 in The Design of Rijndael
         t = a[0] ^ a[1] ^ a[2] ^ a[3]
         u = a[0]
-        a[0] ^= t ^ self.xtime(a[0] ^ a[1])
-        a[1] ^= t ^ self.xtime(a[1] ^ a[2])
-        a[2] ^= t ^ self.xtime(a[2] ^ a[3])
-        a[3] ^= t ^ self.xtime(a[3] ^ u)
+        a[0] ^= t ^ self.gf_multiply_by_2(a[0] ^ a[1])
+        a[1] ^= t ^ self.gf_multiply_by_2(a[1] ^ a[2])
+        a[2] ^= t ^ self.gf_multiply_by_2(a[2] ^ a[3])
+        a[3] ^= t ^ self.gf_multiply_by_2(a[3] ^ u)
 
 
     def mix_columns(self, s):
@@ -92,15 +92,19 @@ class Decrypt:
 
 
     def inv_mix_columns(self, s):
-        # see Sec 4.1.3 in The Design of Rijndael
+        # Apply the inverse MixColumns operation to each column in the state
         for i in range(4):
-            u = self.xtime(self.xtime(s[i][0] ^ s[i][2]))
-            v = self.xtime(self.xtime(s[i][1] ^ s[i][3]))
+            # Compute intermediate values
+            u = self.gf_multiply_by_2(self.gf_multiply_by_2(s[i][0] ^ s[i][2]))
+            v = self.gf_multiply_by_2(self.gf_multiply_by_2(s[i][1] ^ s[i][3]))
+            
+            # Update the state matrix
             s[i][0] ^= u
             s[i][1] ^= v
             s[i][2] ^= u
             s[i][3] ^= v
-
+        
+        # Apply the MixColumns operation to complete the inverse
         self.mix_columns(s)
 
     def bytes_to_matrix(self, data):
