@@ -59,7 +59,7 @@ class Decrypt:
         )
         
         #matrices of round keys using aes key exapansion formulae
-        self.round_keys = self.aes_key_exapansion(self.key)
+        self.round_keys = self.aes_key_expansion(self.key)
         self.decrypt_ecb()
 
     def inv_sub_bytes(self, s):
@@ -137,36 +137,28 @@ class Decrypt:
             return [message[i:i+16] for i in range(0, len(message), block_size)]
 
 
-    def aes_key_exapansion(self, key):
-        # Initialize round keys with raw key material.
-        key_columns = self.bytes2matrix(key)
-        iteration_size = len(key) // 4
+    def aes_key_expansion(self, key):
+        key_schedule = self.bytes2matrix(key)
+        key_size = len(key) // 4  
 
-        i = 1
-        while len(key_columns) < (10 + 1) * 4:
-            # Copy previous word.
-            word = list(key_columns[-1])
+        round_constant = 1  
 
-            # Perform schedule_core once every "row".
-            if len(key_columns) % iteration_size == 0:
-                # Circular shift.
-                word.append(word.pop(0))
-                # Map to S-BOX.
-                word = [self.s_box[b] for b in word]
-                # XOR with first byte of R-CON, since the others bytes of R-CON are 0.
-                word[0] ^= self.r_con[i]
-                i += 1
-            elif len(key) == 32 and len(key_columns) % iteration_size == 4:
-                # Run word through S-box in the fourth iteration when using a
-                # 256-bit key.
-                word = [self.s_box[b] for b in word]
+        while len(key_schedule) < (10 + 1) * 4:
+            temp_word = list(key_schedule[-1])  
 
-            # XOR with equivalent word from previous iteration.
-            word = self.xor_bytes(word, key_columns[-iteration_size])
-            key_columns.append(word)
+            if len(key_schedule) % key_size == 0:
+                temp_word = temp_word[1:] + temp_word[:1]  # Rotate left
+                temp_word = [self.s_box[byte] for byte in temp_word]  
+                temp_word[0] ^= self.r_con[round_constant]  
+                round_constant += 1  
 
-        # Group key words in 4x4 byte matrices.
-        return [key_columns[4*i : 4*(i+1)] for i in range(len(key_columns) // 4)]
+            elif len(key) == 32 and len(key_schedule) % key_size == 4:
+                temp_word = [self.s_box[byte] for byte in temp_word]  
+
+            temp_word = self.xor_bytes(temp_word, key_schedule[-key_size])  
+            key_schedule.append(temp_word)  
+
+        return [key_schedule[i * 4: (i + 1) * 4] for i in range(len(key_schedule) // 4)]
 
     def decrypt_block(self, ciphertext):
         
