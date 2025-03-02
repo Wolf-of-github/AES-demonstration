@@ -70,13 +70,12 @@ class Encrypt:
     def bytes_to_matrix(self, data):
         return [list(data[i:i+4]) for i in range(0, len(data), 4)]
 
-    def matrix2bytes(self, matrix):
-        """ Converts a 4x4 matrix into a 16-byte array.  """
-        return bytes(sum(matrix, []))
 
-    def xor_bytes(self, a, b):
-        """ Returns a new byte array with the elements xor'ed. """
-        return bytes(i^j for i, j in zip(a, b))
+    def matrix_to_bytes(self, matrix):
+        return bytes([byte for row in matrix for byte in row])
+
+    def xor_bytes(self, b1, b2):
+        return bytes(i^j for i, j in zip(b1, b2))
 
     def pad(self, data):
         padding_len = 16 - (len(data) % 16) or 16
@@ -135,7 +134,7 @@ class Encrypt:
         self.shift_rows(state)
         self.add_round_key(state, self.round_keys[-1])
 
-        return self.matrix2bytes(state)
+        return self.matrix_to_bytes(state)
 
 
     def encrypt(self):
