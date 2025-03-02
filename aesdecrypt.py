@@ -64,19 +64,14 @@ class Decrypt:
         self.decrypt()
 
     def inv_sub_bytes(self, s):
-        # Apply the inverse S-box to each byte in the state
         s[:] = [list(map(lambda byte: self.inv_s_box[byte], row)) for row in s]
-
 
     def inv_shift_rows(self, s):
         for i in range(1, 4):
             s[0][i], s[1][i], s[2][i], s[3][i] = s[(0 - i) % 4][i], s[(1 - i) % 4][i], s[(2 - i) % 4][i], s[(3 - i) % 4][i]
 
-    
-    def add_round_key(self,s,k):
-        for i in range(4):
-            for j in range(4):
-                s[i][j] ^= k[i][j]
+    def add_round_key(self, s, k):
+        s[:] = [[s[i][j] ^ k[i][j] for j in range(4)] for i in range(4)]
 
     def xtime(self, a):
         return (((a << 1) ^ 0x1B) & 0xFF) if (a & 0x80) else (a << 1)
