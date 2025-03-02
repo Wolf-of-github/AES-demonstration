@@ -60,7 +60,8 @@ class Decrypt:
         
         #matrices of round keys using aes key exapansion formulae
         self.round_keys = self.aes_key_expansion(self.key)
-        self.decrypt_ecb()
+
+        self.decrypt()
 
     def inv_sub_bytes(self, s):
         for i in range(4):
@@ -138,11 +139,13 @@ class Decrypt:
 
 
     def aes_key_expansion(self, key):
+        # Convert the key into a list of 4-byte columns (words)
         key_schedule = self.bytes2matrix(key)
         key_size = len(key) // 4  
 
         round_constant = 1  
-
+        
+        # Continue key expansion until we reach the required number of words
         while len(key_schedule) < (10 + 1) * 4:
             temp_word = list(key_schedule[-1])  
 
@@ -157,7 +160,8 @@ class Decrypt:
 
             temp_word = self.xor_bytes(temp_word, key_schedule[-key_size])  
             key_schedule.append(temp_word)  
-
+        
+        # Convert the expanded key schedule into groups of 4 words (4x4 matrices)
         return [key_schedule[i * 4: (i + 1) * 4] for i in range(len(key_schedule) // 4)]
 
     def decrypt_block(self, ciphertext):
@@ -180,11 +184,12 @@ class Decrypt:
 
         return self.matrix2bytes(cipher_state)
 
-    def decrypt_ecb(self):
+    def decrypt(self):
+        
         blocks = []
-
         for ciphertext_block in self.split_blocks(self.ciphertext):
-            # CBC mode decrypt: previous XOR decrypt(ciphertext)
-            blocks.append(self.decrypt_block(ciphertext_block))
+            block = self.decrypt_block(ciphertext_block)
+            blocks.append(block)
 
-        return self.unpad(b''.join(blocks))
+        unpadded_block = self.unpad(b''.join(blocks))
+        return unpadded_block
