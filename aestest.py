@@ -9,7 +9,7 @@ from aesencrypt import Encrypt
 from aesdecrypt import Decrypt
 
 def read_multiline_input():
-    print("Enter your plaintext. Press Enter and Ctrl+D to finish:")
+    print("Enter your plaintext. Press Enter and Ctrl+D to finish:\n")
     input_lines = []
     
     try:
