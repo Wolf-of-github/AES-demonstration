@@ -1,16 +1,18 @@
+import sys
+
 class Decrypt:
     
     def __init__(self, key, ciphertext):
 
-        assert len(ciphertext) % 16 == 0
-
-        assert len(ciphertext) >= 32
-
-        if isinstance(key, str):
-            self.key = key.encode('utf-8')
-
-        self.n_rounds = 10
-
+        if not len(ciphertext) % 16 == 0:
+            raise Exception("Cipher text length must be a multiple of 16 bytes")
+        
+        #converts string to encoded bytes object.
+        self.key = key.encode('utf-8')
+        
+        #already in bytes format as received from aes encrypt
+        self.ciphertext = ciphertext
+        
         self.s_box = (
             0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
             0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0,
@@ -56,8 +58,8 @@ class Decrypt:
             0xD4, 0xB3, 0x7D, 0xFA, 0xEF, 0xC5, 0x91, 0x39,
         )
         
-        self._key_matrices = self._expand_key(self.key)
-        self.ciphertext = ciphertext
+        #matrices of round keys using aes key exapansion formulae
+        self.round_keys = self.aes_key_exapansion(self.key)
         self.decrypt_ecb()
 
     def inv_sub_bytes(self, s):
@@ -135,16 +137,13 @@ class Decrypt:
             return [message[i:i+16] for i in range(0, len(message), block_size)]
 
 
-    def _expand_key(self, master_key):
-        """
-        Expands and returns a list of key matrices for the given master_key.
-        """
+    def aes_key_exapansion(self, key):
         # Initialize round keys with raw key material.
-        key_columns = self.bytes2matrix(master_key)
-        iteration_size = len(master_key) // 4
+        key_columns = self.bytes2matrix(key)
+        iteration_size = len(key) // 4
 
         i = 1
-        while len(key_columns) < (self.n_rounds + 1) * 4:
+        while len(key_columns) < (10 + 1) * 4:
             # Copy previous word.
             word = list(key_columns[-1])
 
@@ -157,7 +156,7 @@ class Decrypt:
                 # XOR with first byte of R-CON, since the others bytes of R-CON are 0.
                 word[0] ^= self.r_con[i]
                 i += 1
-            elif len(master_key) == 32 and len(key_columns) % iteration_size == 4:
+            elif len(key) == 32 and len(key_columns) % iteration_size == 4:
                 # Run word through S-box in the fourth iteration when using a
                 # 256-bit key.
                 word = [self.s_box[b] for b in word]
@@ -175,17 +174,17 @@ class Decrypt:
 
         cipher_state = self.bytes2matrix(ciphertext)
 
-        self.add_round_key(cipher_state, self._key_matrices[-1])
+        self.add_round_key(cipher_state, self.round_keys[-1])
         self.inv_shift_rows(cipher_state)
         self.inv_sub_bytes(cipher_state)
 
-        for i in range(self.n_rounds - 1, 0, -1):
-            self.add_round_key(cipher_state, self._key_matrices[i])
+        for i in range(10 - 1, 0, -1):
+            self.add_round_key(cipher_state, self.round_keys[i])
             self.inv_mix_columns(cipher_state)
             self.inv_shift_rows(cipher_state)
             self.inv_sub_bytes(cipher_state)
 
-        self.add_round_key(cipher_state, self._key_matrices[0])
+        self.add_round_key(cipher_state, self.round_keys[0])
 
         return self.matrix2bytes(cipher_state)
 

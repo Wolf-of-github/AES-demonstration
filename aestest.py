@@ -16,7 +16,6 @@ def main():
     print("Key :", key)
     print("Ciphertext :",ciphertext.hex())
 
-
     original_plain_text = Decrypt(key, ciphertext).decrypt_ecb()
 
     print("Original plaintext: ",original_plain_text)
