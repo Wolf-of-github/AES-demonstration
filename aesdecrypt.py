@@ -6,13 +6,11 @@ class Decrypt:
 
         if not len(ciphertext) % 16 == 0:
             raise Exception("Cipher text length must be a multiple of 16 bytes")
-        
         #converts string to encoded bytes object.
         self.key = key.encode('utf-8')
-        
         #already in bytes format as received from aes encrypt
         self.ciphertext = ciphertext
-        
+
         self.s_box = (
             0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
             0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0,
@@ -58,7 +56,6 @@ class Decrypt:
             0xD4, 0xB3, 0x7D, 0xFA, 0xEF, 0xC5, 0x91, 0x39,
         )
         
-        #matrices of round keys using aes key exapansion formulae
         self.round_keys = self.aes_key_expansion(self.key)
 
         self.decrypt()
